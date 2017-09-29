@@ -28,7 +28,7 @@ var User = require('./models/User');
 
 // Controllers
 var userController = require('./controllers/user');
-var contactController = require('./controllers/contact');
+var jobController = require('./controllers/job');
 
 // React and Server-Side Rendering
 var routes = require('./app/routes');
@@ -79,7 +79,8 @@ if (app.get('env') === 'development') {
   app.use(require('webpack-hot-middleware')(compiler));
 }
 
-app.post('/contact', contactController.contactPost);
+app.post('/job', jobController.jobPost);
+app.get('/job-list', jobController.jobListGet);
 app.put('/account', userController.ensureAuthenticated, userController.accountPut);
 app.delete('/account', userController.ensureAuthenticated, userController.accountDelete);
 app.post('/signup', userController.signupPost);

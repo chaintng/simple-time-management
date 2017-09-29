@@ -3,7 +3,7 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
 import { expect } from 'chai';
-import * as actions from '../../../app/actions/contact';
+import * as actions from '../../../app/actions/job';
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
@@ -25,7 +25,7 @@ describe('contact actions', () => {
 
     const store = mockStore({});
 
-    return store.dispatch(actions.submitContactForm())
+    return store.dispatch(actions.submitJobForm())
       .then(() => {
         expect(store.getActions()).to.deep.equal(expectedActions);
       });
