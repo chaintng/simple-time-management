@@ -14,6 +14,24 @@ exports.jobPost = function(req, res) {
     })
 }
 
+exports.jobPut = function(req, res) {
+  new Job({ id: req.body.jobId })
+    .save({
+      title: req.body.title,
+      note: req.body.note,
+      user_id: req.user.id
+    })
+    .then(function(job) {
+    res.send({ msg: 'Job has been updated.' });
+  });
+}
+
+exports.jobDel = function(req, res) {
+  new Job({ id: req.body.jobId }).destroy().then(function(job) {
+    res.send({ msg: 'Job has been permanently deleted.' });
+  });
+}
+
 exports.jobListGet = function(req, res) {
   return new Job().fetchAll()
     .then((items) => {

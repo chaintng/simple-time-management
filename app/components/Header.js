@@ -26,12 +26,14 @@ class Header extends React.Component {
       </ul>
     );
     return (
-      <div className="container">
-        <ul className="list-inline">
-          <li><IndexLink to="/">Home</IndexLink></li>
-        </ul>
-        {rightNav}
-      </div>
+      <section className="hero is-info">
+        <div className="container">
+          <ul className="list-inline">
+            <li><IndexLink to="/">Home</IndexLink></li>
+          </ul>
+          {rightNav}
+        </div>
+      </section>
     );
   }
 }

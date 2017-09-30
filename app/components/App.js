@@ -7,7 +7,9 @@ class App extends React.Component {
     return (
       <div>
         <Header/>
-        {this.props.children}
+        <section className="is-medium">
+          {this.props.children}
+        </section>
         <Footer/>
       </div>
     );

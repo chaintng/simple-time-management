@@ -80,6 +80,8 @@ if (app.get('env') === 'development') {
 }
 
 app.post('/job', jobController.jobPost);
+app.put('/job', jobController.jobPut);
+app.delete('/job', jobController.jobDel);
 app.get('/job-list', jobController.jobListGet);
 app.put('/account', userController.ensureAuthenticated, userController.accountPut);
 app.delete('/account', userController.ensureAuthenticated, userController.accountDelete);

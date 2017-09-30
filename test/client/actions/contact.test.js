@@ -13,14 +13,14 @@ describe('contact actions', () => {
     fetchMock.restore();
   });
 
-  it('creates CONTACT_FORM_SUCCESS action when form is submitted', () => {
+  it('creates JOB_SUBMIT_SUCCESS action when form is submitted', () => {
     fetchMock.mock('/contact', 'POST', {
       body: { msg: 'Thank you! Your feedback has been submitted.' }
     });
 
     const expectedActions = [
       { type: 'CLEAR_MESSAGES' },
-      { type: 'CONTACT_FORM_SUCCESS', messages: [{ msg: 'Thank you! Your feedback has been submitted.' }] }
+      { type: 'JOB_SUBMIT_SUCCESS', messages: [{ msg: 'Thank you! Your feedback has been submitted.' }] }
     ];
 
     const store = mockStore({});
