@@ -1,13 +1,13 @@
 const moment = require('moment')
 
 const Job = require('../models/Job')
-const USER_ROLES = require('../config/constants').USER_ROLES
+const ACCESS_ROLES = require('../config/constants').ACCESS_ROLES
 
 /**
  * POST /job
  */
 exports.jobPost = function(req, res) {
-  const errorMsg = _validateInput(req.body)
+  const errorMsg = _validateInput(req)
   if (errorMsg) {
     return res.status(400).send({ msg: errorMsg })
   }
@@ -28,17 +28,17 @@ exports.jobPost = function(req, res) {
         date: req.body.date,
         hour: req.body.hour,
         note: req.body.note,
-        user_id: req.user.id
+        user_id: !!req.body.user_id ? req.body.user_id : req.user.id
       }).save()
         .then(function(user) {
-          res.json({status: 'OK'})
+          res.json({ msg: 'Job has been inserted.' })
         })
     })
 
 }
 
 exports.jobPut = function(req, res) {
-  const errorMsg = _validateInput(req.body)
+  const errorMsg = _validateInput(req)
   if (errorMsg) {
     return res.status(400).send({ msg: errorMsg })
   }
@@ -49,7 +49,7 @@ exports.jobPut = function(req, res) {
       date: req.body.date,
       hour: req.body.hour,
       note: req.body.note,
-      user_id: req.user.id
+      user_id: !!req.body.user_id ? req.body.user_id : req.user.id
     })
     .then(function(job) {
     res.send({ msg: 'Job has been updated.' });
@@ -72,18 +72,21 @@ exports.jobListGet = function(req, res) {
       qb.andWhere('date', '<=', req.query.date_to)
     }
 
-    if (req.user.get('role') !== USER_ROLES.ADMIN_USER ) {
+    if (ACCESS_ROLES.CAN_MANAGE_USER.indexOf(req.user.get('role')) < 0) {
       qb.where('user_id', '=', req.user.id)
     }
 
     qb.join('users', 'jobs.user_id', 'users.id')
     qb.orderBy('date', 'DESC')
-    qb.select('jobs.id', 'users.name', 'jobs.title', 'jobs.note', 'jobs.date', 'jobs.hour')
+    qb.select('jobs.id', 'users.id AS user_id', 'users.name AS user_name', 'preferred_working_hour',
+      'jobs.title', 'jobs.note', 'jobs.date', 'jobs.hour')
   }).fetchAll()
     .then((items) => {
       const returnObj = items.models.map((item) => ({
         id: item.get('id'),
-        user_name: item.get('name'),
+        user_id: item.get('user_id'),
+        user_name: item.get('user_name'),
+        preferred_working_hour: item.get('preferred_working_hour'),
         title: item.get('title'),
         note: item.get('note'),
         date: item.get('date') ? moment(item.get('date')).format('YYYY-MM-DD') : null,
@@ -93,11 +96,16 @@ exports.jobListGet = function(req, res) {
     })
 }
 
-function _validateInput(input) {
+function _validateInput(req) {
+  const input = req
   if (input.hour > 24) {
     return 'Input hour is more than 24 hours.'
   }
   if (input.hour <= 0) {
     return 'Input hour should be integer number that more than 0.'
+  }
+  if (!ACCESS_ROLES.CAN_CRUD_USER_JOBS.indexOf(req.user.get('role'))
+    && req.body.user_id && req.body.user_id !== req.body.user_id) {
+    return `Only ${ACCESS_ROLES.CAN_CRUD_USER_JOBS.join(', ')} who can CRUD other user task`;
   }
 }

@@ -83,6 +83,7 @@ app.post('/job', jobController.jobPost);
 app.put('/job', jobController.jobPut);
 app.delete('/job', jobController.jobDel);
 app.get('/job-list', jobController.jobListGet);
+app.get('/user-list', userController.userListGet);
 app.put('/account', userController.ensureAuthenticated, userController.accountPut);
 app.delete('/account', userController.ensureAuthenticated, userController.accountDelete);
 app.post('/signup', userController.signupPost);

@@ -3,11 +3,13 @@ export const initialState = {
   exportDisplay: false,
   isLoadingJobs: true,
   jobs: [],
+  allUsers: [],
   jobFormValue: {
     title: '',
     note: '',
     hour: '',
-    date: ''
+    date: '',
+    user_id: '',
   }
 };
 
@@ -32,6 +34,11 @@ export default function job(state = initialState, action) {
         isLoadingJobs: false,
         jobs: action.jobs,
         jobFormValue: initialState.jobFormValue
+      });
+    case 'FINISH_LOAD_ALL_USERS':
+      return Object.assign({}, state, {
+        allUsers: action.users,
+        jobFormValue: Object.assign({}, state.jobFormValue, {user_id: action.users[0].id})
       });
     default:
       return state;

@@ -4,8 +4,8 @@ var nodemailer = require('nodemailer');
 var jwt = require('jsonwebtoken');
 var moment = require('moment');
 var request = require('request');
-var qs = require('querystring');
 var User = require('../models/User');
+var ACCESS_ROLES = require('../config/constants').ACCESS_ROLES
 
 function generateToken(user) {
   var payload = {
@@ -367,3 +367,21 @@ exports.authGoogle = function(req, res) {
 exports.authGoogleCallback = function(req, res) {
   res.render('loading');
 };
+
+
+exports.userListGet = function(req, res) {
+  if (ACCESS_ROLES.CAN_MANAGE_USER.indexOf(req.user.get('role')) < 0) {
+    return res.status(400).send({msg: 'Only ADMIN_USER and USER_MANAGER are allowed.'})
+  }
+
+  return new User().fetchAll()
+    .then((items) => {
+      const returnObj = items.models.map((item) => ({
+        id: item.get('id'),
+        user_name: item.get('name'),
+        role: item.get('role')
+      }))
+      return res.json(returnObj)
+    })
+}
+

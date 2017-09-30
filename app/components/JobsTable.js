@@ -18,10 +18,10 @@ class JobTable extends React.Component {
         </thead>
         <tbody>
           {this.props.jobs.map((job) => {
-            return (<tr key={job.id} className={this.props.preferredWorkingHour >= job.hour ? 'green' : 'red'}>
+            return (<tr key={job.id} className={job.preferred_working_hour >= job.hour ? 'green' : 'red'}>
               <td style={{display: 'none'}}>{job.id}</td>
               <td>{job.date}</td>
-              <td style={this.props.hideUserName ? {display: 'none'} : {}}>{job.user_name}</td>
+              <td style={this.props.hideUserName ? {display: 'none'} : {}}>{`${job.user_id}: ${job.user_name}`}</td>
               <td>{job.title}</td>
               <td>{job.note}</td>
               <td>{job.hour}</td>

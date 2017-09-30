@@ -1,12 +1,12 @@
 import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux'
-import { submitJobForm, loadAllJob, deleteJob, changeMode, exportDisplay } from '../actions/job';
+import { submitJobForm, loadAllJob, deleteJob, changeMode, loadAllUsers } from '../actions/job';
 import Messages from './Messages';
 import JobTable from './JobsTable';
 import JobExport from './JobsExport';
 import { initialState } from '../reducers/job'
-import { USER_ROLES } from "../../config/constants";
+import { ACCESS_ROLES } from "../../config/constants";
 
 class Job extends React.Component {
   constructor(props) {
@@ -21,6 +21,8 @@ class Job extends React.Component {
       dateFrom: document.getElementById('filterDateFrom').value,
       dateTo: document.getElementById('filterDateTo').value
     }, this.props.token))
+
+    this.props.dispatch(loadAllUsers(this.props.token))
   }
 
   handleChange(event) {
@@ -62,17 +64,17 @@ class Job extends React.Component {
   }
 
   render() {
+    const canCRUDuserJobs = ACCESS_ROLES.CAN_CRUD_USER_JOBS.indexOf(this.props.userRole) >= 0
     const bodyData = this.props.exportDisplay === true ? <JobExport
       jobs={this.props.jobs}
       dateFrom={document.getElementById('filterDateFrom').value}
       dateTo={document.getElementById('filterDateTo').value}
-      hideUserName={this.props.userRole !== USER_ROLES.ADMIN_USER}
+      hideUserName={!canCRUDuserJobs}
     /> : <JobTable
       jobs={this.props.jobs}
-      preferredWorkingHour={this.props.preferredWorkingHour}
       editAction={this.handleEdit.bind(this)}
       deleteAction={this.handleDelete.bind(this)}
-      hideUserName={this.props.userRole !== USER_ROLES.ADMIN_USER}
+      hideUserName={!canCRUDuserJobs}
     />
     return (<div className="container">
         <div>
@@ -90,7 +92,15 @@ class Job extends React.Component {
               <input type="date" name="date" id="date" value={this.props.jobFormValue.date} onChange={this.handleChange.bind(this)}/>
               <label htmlFor="note">Hour</label>
               <input type="text" name="hour" id="hour" value={this.props.jobFormValue.hour} onChange={this.handleChange.bind(this)}/>
-              <br/>
+
+              {canCRUDuserJobs ? <div>
+                <label htmlFor="user_id">User:</label>
+                <select name="user_id" value={this.props.jobFormValue.user_id} onChange={this.handleChange.bind(this)}>
+                  {this.props.allUsers.map((item) => {
+                    return (<option value={item.id}>{`${item.id}: ${item.user_name}`}</option>)
+                  })}
+                </select>
+              </div> : ''}
               <button onClick={this.handleReset.bind(this)}>{this.props.mode === 'ADD' ? 'Reset' : 'Cancel'}</button> -
               <button type="submit">{this.props.mode === 'ADD' ? 'Add' : 'Save'}</button>
             </form>
@@ -130,8 +140,8 @@ const mapStateToProps = (state) => {
     mode: state.job.mode,
     jobFormValue: state.job.jobFormValue,
     exportDisplay: state.job.exportDisplay,
-    preferredWorkingHour: state.auth.user.preferred_working_hour,
-    userRole: state.auth.user.role
+    userRole: state.auth.user.role,
+    allUsers: state.job.allUsers
   };
 };
 

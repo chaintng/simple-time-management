@@ -11,7 +11,14 @@ export function submitJobForm(mode, job, token) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(job)
+      body: JSON.stringify({
+        id: job.id,
+        user_id: job.user_id,
+        title: job.title,
+        note: job.note,
+        hour: job.hour,
+        date: job.date,
+      })
     }).then((response) => {
       if (response.ok) {
         return response.json().then((json) => {
@@ -19,7 +26,10 @@ export function submitJobForm(mode, job, token) {
             type: 'JOB_SUBMIT_SUCCESS',
             messages: [json]
           });
-          dispatch(loadAllJob({}, token))
+          dispatch(loadAllJob({
+            dateFrom: document.getElementById('filterDateFrom').value,
+            dateTo: document.getElementById('filterDateTo').value
+          }, token))
         });
       } else {
         return response.json().then((json) => {
@@ -65,6 +75,26 @@ export function loadAllJob(filter, token, exportDisplay = false) {
           });
         });
       }
+    });
+  }
+}
+
+
+export function loadAllUsers(token) {
+  return (dispatch) => {
+    return fetch('/user-list', {
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    }).then((response) => {
+      return response.json().then((json) => {
+        dispatch({
+          type: 'FINISH_LOAD_ALL_USERS',
+          users: json,
+        });
+      });
     });
   }
 }

@@ -12,7 +12,6 @@ class JobTable extends React.Component {
       allUserName.add(item.user_name)
     })
 
-    debugger;
     return (<table className="table" style={{width: '100%'}}>
       <tbody>
         <tr style={this.props.hideUserName ? {display: 'none'} : {}}>
