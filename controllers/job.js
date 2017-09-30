@@ -39,9 +39,18 @@ exports.jobDel = function(req, res) {
 }
 
 exports.jobListGet = function(req, res) {
-  return new Job()
-    .where({user_id: req.user.id})
-    .orderBy('date', 'DESC').fetchAll()
+  return Job.query((qb) => {
+    if (req.query.date_from) {
+      qb.andWhere('date', '>=', req.query.date_from)
+    }
+
+    if (req.query.date_to) {
+      qb.andWhere('date', '<=', req.query.date_to)
+    }
+
+    qb.where('user_id', '=', req.user.id)
+      .orderBy('date', 'DESC')
+  }).fetchAll()
     .then((items) => {
       const returnObj = items.models.map((item) => ({
         id: item.get('id'),

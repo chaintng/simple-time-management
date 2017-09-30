@@ -1,3 +1,5 @@
+const queryString = require('query-string')
+
 export function submitJobForm(mode, job, token) {
   return (dispatch) => {
     dispatch({
@@ -17,7 +19,7 @@ export function submitJobForm(mode, job, token) {
             type: 'JOB_SUBMIT_SUCCESS',
             messages: [json]
           });
-          dispatch(loadAllJob(token))
+          dispatch(loadAllJob({}, token))
         });
       } else {
         return response.json().then((json) => {
@@ -31,24 +33,28 @@ export function submitJobForm(mode, job, token) {
   };
 }
 
-export function loadAllJob(token) {
+export function loadAllJob(filter, token, exportDisplay = false) {
   return (dispatch) => {
     dispatch({
       type: 'BEGIN_LOAD_ALL_JOBS'
     })
 
-    return fetch('/job-list', {
+    return fetch(`/job-list?${queryString.stringify({
+      date_from: filter.dateFrom,
+      date_to: filter.dateTo
+    })}`, {
       method: 'get',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
+      }
     }).then((response) => {
       if (response.ok) {
         return response.json().then((json) => {
           dispatch({
             type: 'FINISH_LOAD_ALL_JOBS',
-            jobs: json
+            jobs: json,
+            exportDisplay
           });
         });
       } else {
@@ -91,7 +97,7 @@ export function deleteJob(jobId, token) {
       })
     }).then((response) => {
       if (response.ok) {
-        dispatch(loadAllJob(token))
+        dispatch(loadAllJob({}, token))
       } else {
         return response.json().then((json) => {
           dispatch({

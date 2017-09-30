@@ -87,3 +87,10 @@ tr.green {
 tr.red {
   background-color: #ffe8ed;
 }
+
+.filter form,
+.filter div,
+.filter button {
+  display: inline-block;
+  margin: 0 20px;
+}

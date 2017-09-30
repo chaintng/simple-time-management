@@ -1,16 +1,25 @@
 import React from 'react';
+import moment from 'moment';
 import { connect } from 'react-redux'
-import { submitJobForm, loadAllJob, deleteJob, changeMode } from '../actions/job';
+import { submitJobForm, loadAllJob, deleteJob, changeMode, exportDisplay } from '../actions/job';
 import Messages from './Messages';
 import JobTable from './JobsTable';
+import JobExport from './JobsExport';
+import { initialState } from '../reducers/job'
 
 class Job extends React.Component {
   constructor(props) {
     super(props);
+    const date = new Date();
+    this.firstDay = moment().startOf('month');
+    this.lastDay = moment().endOf('month');
   }
 
   componentDidMount() {
-    this.props.dispatch(loadAllJob(this.props.token))
+    this.props.dispatch(loadAllJob({
+      dateFrom: document.getElementById('filterDateFrom').value,
+      dateTo: document.getElementById('filterDateTo').value
+    }, this.props.token))
   }
 
   handleChange(event) {
@@ -32,10 +41,36 @@ class Job extends React.Component {
 
   handleReset(event) {
     event.preventDefault();
-    this.props.dispatch(changeMode('ADD', {}))
+    this.props.dispatch(changeMode('ADD', initialState.jobFormValue))
+  }
+
+  handleFilterSubmit(event) {
+    event.preventDefault();
+    this.props.dispatch(loadAllJob({
+      dateFrom: document.getElementById('filterDateFrom').value,
+      dateTo: document.getElementById('filterDateTo').value
+    }, this.props.token))
+  }
+
+  handleExport(event) {
+    event.preventDefault();
+    this.props.dispatch(loadAllJob({
+      dateFrom: document.getElementById('filterDateFrom').value,
+      dateTo: document.getElementById('filterDateTo').value
+    }, this.props.token, true))
   }
 
   render() {
+    const bodyData = this.props.exportDisplay === true ? <JobExport
+      jobs={this.props.jobs}
+      dateFrom={document.getElementById('filterDateFrom').value}
+      dateTo={document.getElementById('filterDateTo').value}
+    /> : <JobTable
+      jobs={this.props.jobs}
+      preferredWorkingHour={this.props.preferredWorkingHour}
+      editAction={this.handleEdit.bind(this)}
+      deleteAction={this.handleDelete.bind(this)}
+    />
     return (
       <div className="container columns">
         <div className="column">
@@ -56,14 +91,23 @@ class Job extends React.Component {
           </form>
         </div>
         <div className="column" style={{flexGrow: 6}}>
+          <div className="filter">
+            <form onSubmit={this.handleFilterSubmit.bind(this)}>
+              <div>Filter by:</div>
+              <div>
+              <label htmlFor="filterDateFrom">Date From:</label>
+                <input type="date" name="filterDateFrom" id="filterDateFrom" defaultValue={this.firstDay.format('YYYY-MM-DD')}/>
+              </div>
+              <div>
+              <label htmlFor="filterDateTo">Date To:</label>
+                <input type="date" name="filterDateTo" id="filterDateTo" defaultValue={this.lastDay.format('YYYY-MM-DD')}/>
+              </div>
+              <button type="submit" name="filter">Filter</button>
+            </form>
+            <button name="export" onClick={this.handleExport.bind(this)}>Export</button>
+          </div>
           { this.props.isLoadingJobs ?
-            "Loading..." :
-            <JobTable
-              jobs={this.props.jobs}
-              preferredWorkingHour={this.props.preferredWorkingHour}
-              editAction={this.handleEdit.bind(this)}
-              deleteAction={this.handleDelete.bind(this)}
-            />
+            "Loading..." : bodyData
           }
         </div>
       </div>
@@ -79,6 +123,7 @@ const mapStateToProps = (state) => {
     isLoadingJobs: state.job.isLoadingJobs,
     mode: state.job.mode,
     jobFormValue: state.job.jobFormValue,
+    exportDisplay: state.job.exportDisplay,
     preferredWorkingHour: state.auth.user.preferred_working_hour,
   };
 };

@@ -1,0 +1,32 @@
+import React from 'react';
+
+class JobTable extends React.Component {
+
+  render() {
+    const totalTime = this.props.jobs.reduce((prev, cur) => {
+      return prev + cur.hour
+    }, 0)
+    return (<table className="table" style={{width: '100%'}}>
+      <tbody>
+        <tr>
+          <td>Date:</td>
+          <td>{this.props.dateFrom} to {this.props.dateTo}</td>
+        </tr>
+        <tr>
+          <td>Total times:</td>
+          <td>{totalTime} hour(s)</td>
+        </tr>
+        <tr>
+          <td>Note:</td>
+          <td>
+            {this.props.jobs.map((item, index) => {
+              return (<li key={index}>{item.note}</li>)
+            })}
+          </td>
+        </tr>
+      </tbody>
+    </table>);
+  }
+}
+
+export default JobTable;
