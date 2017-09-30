@@ -6,6 +6,7 @@ import Messages from './Messages';
 import JobTable from './JobsTable';
 import JobExport from './JobsExport';
 import { initialState } from '../reducers/job'
+import { USER_ROLES } from "../../config/constants";
 
 class Job extends React.Component {
   constructor(props) {
@@ -65,50 +66,55 @@ class Job extends React.Component {
       jobs={this.props.jobs}
       dateFrom={document.getElementById('filterDateFrom').value}
       dateTo={document.getElementById('filterDateTo').value}
+      hideUserName={this.props.userRole !== USER_ROLES.ADMIN_USER}
     /> : <JobTable
       jobs={this.props.jobs}
       preferredWorkingHour={this.props.preferredWorkingHour}
       editAction={this.handleEdit.bind(this)}
       deleteAction={this.handleDelete.bind(this)}
+      hideUserName={this.props.userRole !== USER_ROLES.ADMIN_USER}
     />
-    return (
-      <div className="container columns">
-        <div className="column">
+    return (<div className="container">
+        <div>
           <h3>Jobs ({this.props.mode})</h3>
           <Messages messages={this.props.messages}/>
-          <form onSubmit={this.handleSubmit.bind(this)}>
-            <label htmlFor="title">Title</label>
-            <input type="text" name="title" id="title" value={this.props.jobFormValue.title} onChange={this.handleChange.bind(this)} autoFocus/>
-            <label htmlFor="note">Note</label>
-            <textarea name="note" id="note" rows="7" value={this.props.jobFormValue.note} onChange={this.handleChange.bind(this)}></textarea>
-            <label htmlFor="note">Date</label>
-            <input type="date" name="date" id="date" value={this.props.jobFormValue.date} onChange={this.handleChange.bind(this)}/>
-            <label htmlFor="note">Hour</label>
-            <input type="text" name="hour" id="hour" value={this.props.jobFormValue.hour} onChange={this.handleChange.bind(this)}/>
-            <br/>
-            <button onClick={this.handleReset.bind(this)}>{this.props.mode === 'ADD' ? 'Reset' : 'Cancel'}</button> -
-            <button type="submit">{this.props.mode === 'ADD' ? 'Add' : 'Save'}</button>
-          </form>
         </div>
-        <div className="column" style={{flexGrow: 6}}>
-          <div className="filter">
-            <form onSubmit={this.handleFilterSubmit.bind(this)}>
-              <div>Filter by:</div>
-              <div>
-              <label htmlFor="filterDateFrom">Date From:</label>
-                <input type="date" name="filterDateFrom" id="filterDateFrom" defaultValue={this.firstDay.format('YYYY-MM-DD')}/>
-              </div>
-              <div>
-              <label htmlFor="filterDateTo">Date To:</label>
-                <input type="date" name="filterDateTo" id="filterDateTo" defaultValue={this.lastDay.format('YYYY-MM-DD')}/>
-              </div>
-              <button type="submit" name="filter">Filter</button>
+        <div className="columns">
+          <div className="column">
+            <form onSubmit={this.handleSubmit.bind(this)}>
+              <label htmlFor="title">Title</label>
+              <input type="text" name="title" id="title" value={this.props.jobFormValue.title} onChange={this.handleChange.bind(this)} autoFocus/>
+              <label htmlFor="note">Note</label>
+              <textarea name="note" id="note" rows="7" value={this.props.jobFormValue.note} onChange={this.handleChange.bind(this)}></textarea>
+              <label htmlFor="note">Date</label>
+              <input type="date" name="date" id="date" value={this.props.jobFormValue.date} onChange={this.handleChange.bind(this)}/>
+              <label htmlFor="note">Hour</label>
+              <input type="text" name="hour" id="hour" value={this.props.jobFormValue.hour} onChange={this.handleChange.bind(this)}/>
+              <br/>
+              <button onClick={this.handleReset.bind(this)}>{this.props.mode === 'ADD' ? 'Reset' : 'Cancel'}</button> -
+              <button type="submit">{this.props.mode === 'ADD' ? 'Add' : 'Save'}</button>
             </form>
-            <button name="export" onClick={this.handleExport.bind(this)}>Export</button>
           </div>
-          { this.props.isLoadingJobs ?
-            "Loading..." : bodyData
-          }
+          <div className="column" style={{flexGrow: 6}}>
+            <div className="filter">
+              <form onSubmit={this.handleFilterSubmit.bind(this)}>
+                <div>Filter by:</div>
+                <div>
+                <label htmlFor="filterDateFrom">Date From:</label>
+                  <input type="date" name="filterDateFrom" id="filterDateFrom" defaultValue={this.firstDay.format('YYYY-MM-DD')}/>
+                </div>
+                <div>
+                <label htmlFor="filterDateTo">Date To:</label>
+                  <input type="date" name="filterDateTo" id="filterDateTo" defaultValue={this.lastDay.format('YYYY-MM-DD')}/>
+                </div>
+                <button type="submit" name="filter">Filter</button>
+              </form>
+              <button name="export" onClick={this.handleExport.bind(this)}>Export</button>
+            </div>
+            { this.props.isLoadingJobs ?
+              "Loading..." : bodyData
+            }
+          </div>
         </div>
       </div>
     );
@@ -125,6 +131,7 @@ const mapStateToProps = (state) => {
     jobFormValue: state.job.jobFormValue,
     exportDisplay: state.job.exportDisplay,
     preferredWorkingHour: state.auth.user.preferred_working_hour,
+    userRole: state.auth.user.role
   };
 };
 

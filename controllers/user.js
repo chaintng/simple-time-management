@@ -79,7 +79,8 @@ exports.signupPost = function(req, res, next) {
   new User({
     name: req.body.name,
     email: req.body.email,
-    password: req.body.password
+    password: req.body.password,
+    role: DEFAULT_USER_ROLE
   }).save()
     .then(function(user) {
         res.send({ token: generateToken(user), user: user });
@@ -348,6 +349,7 @@ exports.authGoogle = function(req, res) {
                 user = new User();
                 user.set('name', profile.name);
                 user.set('email', profile.email);
+                user.set('role', DEFAULT_USER_ROLE)
                 user.set('gender', profile.gender);
                 user.set('location', profile.location);
                 user.set('picture', profile.picture.replace('sz=50', 'sz=200'));

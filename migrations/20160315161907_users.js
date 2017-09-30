@@ -8,6 +8,7 @@ exports.up = function(knex, Promise) {
       table.string('password_reset_token');
       table.dateTime('password_reset_expires');
       table.integer('preferred_working_hour');
+      table.string('role');
       table.string('gender');
       table.string('location');
       table.string('website');
