@@ -1,3 +1,5 @@
+const moment = require('moment')
+
 const Job = require('../models/Job')
 /**
  * POST /job
@@ -6,6 +8,8 @@ exports.jobPost = function(req, res) {
   console.log(req)
   new Job({
     title: req.body.title,
+    date: req.body.date,
+    hour: req.body.hour,
     note: req.body.note,
     user_id: req.user.id
   }).save()
@@ -15,9 +19,11 @@ exports.jobPost = function(req, res) {
 }
 
 exports.jobPut = function(req, res) {
-  new Job({ id: req.body.jobId })
+  new Job({ id: req.body.id })
     .save({
       title: req.body.title,
+      date: req.body.date,
+      hour: req.body.hour,
       note: req.body.note,
       user_id: req.user.id
     })
@@ -27,18 +33,22 @@ exports.jobPut = function(req, res) {
 }
 
 exports.jobDel = function(req, res) {
-  new Job({ id: req.body.jobId }).destroy().then(function(job) {
+  new Job({ id: req.body.jobId }).destroy().then(function() {
     res.send({ msg: 'Job has been permanently deleted.' });
   });
 }
 
 exports.jobListGet = function(req, res) {
-  return new Job().fetchAll()
+  return new Job()
+    .where({user_id: req.user.id})
+    .orderBy('date', 'DESC').fetchAll()
     .then((items) => {
       const returnObj = items.models.map((item) => ({
         id: item.get('id'),
         title: item.get('title'),
-        note: item.get('note')
+        note: item.get('note'),
+        date: item.get('date') ? moment(item.get('date')).format('YYYY-MM-DD') : null,
+        hour: item.get('hour')
       }))
       return res.json(returnObj)
     })

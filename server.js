@@ -97,6 +97,7 @@ app.get('/auth/google/callback', userController.authGoogleCallback);
 app.use(function(req, res) {
   var initialState = {
     auth: { token: req.cookies.token, user: req.user },
+    global: {},
     messages: {}
   };
 

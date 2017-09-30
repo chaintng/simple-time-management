@@ -20,24 +20,8 @@ class Login extends React.Component {
     this.props.dispatch(login(this.state.email, this.state.password));
   }
 
-  handleFacebook() {
-    this.props.dispatch(facebookLogin())
-  }
-
-  handleTwitter() {
-    this.props.dispatch(twitterLogin())
-  }
-
   handleGoogle() {
     this.props.dispatch(googleLogin())
-  }
-
-  handleVk() {
-    this.props.dispatch(vkLogin())
-  }
-
-  handleGithub() {
-    this.props.dispatch(githubLogin())
   }
 
   render() {

@@ -19,7 +19,7 @@ export default function job(state = initialState, action) {
     case 'CHANGE_MODE':
       return Object.assign({}, state, {
         mode: action.mode,
-        jobFormValue: Object.assign({}, state.jobFormValue, action.jobFormValue)
+        jobFormValue: action.mode === 'ADD' ? initialState.jobFormValue : Object.assign({}, state.jobFormValue, action.jobFormValue)
       });
     case 'FINISH_LOAD_ALL_JOBS':
       return Object.assign({}, state, {

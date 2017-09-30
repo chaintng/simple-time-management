@@ -23,11 +23,7 @@ class Job extends React.Component {
   }
 
   handleEdit(job) {
-    this.props.dispatch(changeMode('EDIT', {
-      jobId: job.id,
-      title: job.title,
-      note: job.note
-    }))
+    this.props.dispatch(changeMode('EDIT', job))
   }
 
   handleDelete(jobId) {
@@ -50,16 +46,21 @@ class Job extends React.Component {
             <input type="text" name="title" id="title" value={this.props.jobFormValue.title} onChange={this.handleChange.bind(this)} autoFocus/>
             <label htmlFor="note">Note</label>
             <textarea name="note" id="note" rows="7" value={this.props.jobFormValue.note} onChange={this.handleChange.bind(this)}></textarea>
+            <label htmlFor="note">Date</label>
+            <input type="date" name="date" id="date" value={this.props.jobFormValue.date} onChange={this.handleChange.bind(this)}/>
+            <label htmlFor="note">Hour</label>
+            <input type="text" name="hour" id="hour" value={this.props.jobFormValue.hour} onChange={this.handleChange.bind(this)}/>
             <br/>
             <button onClick={this.handleReset.bind(this)}>{this.props.mode === 'ADD' ? 'Reset' : 'Cancel'}</button> -
-            <button type="submit">{this.props.mode === 'ADD' ? 'Send' : 'Save'}</button>
+            <button type="submit">{this.props.mode === 'ADD' ? 'Add' : 'Save'}</button>
           </form>
         </div>
         <div className="column" style={{flexGrow: 6}}>
           { this.props.isLoadingJobs ?
-            "I'm Loading" :
+            "Loading..." :
             <JobTable
               jobs={this.props.jobs}
+              preferredWorkingHour={this.props.preferredWorkingHour}
               editAction={this.handleEdit.bind(this)}
               deleteAction={this.handleDelete.bind(this)}
             />
@@ -77,7 +78,8 @@ const mapStateToProps = (state) => {
     jobs: state.job.jobs,
     isLoadingJobs: state.job.isLoadingJobs,
     mode: state.job.mode,
-    jobFormValue: state.job.jobFormValue
+    jobFormValue: state.job.jobFormValue,
+    preferredWorkingHour: state.auth.user.preferred_working_hour,
   };
 };
 

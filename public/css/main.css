@@ -79,3 +79,11 @@ h3 {
   font-size: 2em;
   font-weight: bold;
 }
+
+tr.green {
+  background-color: #e4ffbf;
+}
+
+tr.red {
+  background-color: #ffe8ed;
+}

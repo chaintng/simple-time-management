@@ -9,11 +9,7 @@ export function submitJobForm(mode, job, token) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        jobId: job.jobId,
-        title: job.title,
-        note: job.note
-      })
+      body: JSON.stringify(job)
     }).then((response) => {
       if (response.ok) {
         return response.json().then((json) => {
