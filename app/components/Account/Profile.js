@@ -18,7 +18,7 @@ class Profile extends React.Component {
     this.editUserProfileMode = this.props.location.query.mode === 'EDIT'
     this.addUserProfileMode = this.props.location.query.mode === 'ADD'
 
-    if (ACCESS_ROLES.CAN_CRUD_USER_JOBS.indexOf(this.props.user.role) < 0 && this.editUserProfileMode) {
+    if (ACCESS_ROLES.CAN_MANAGE_USER.indexOf(this.props.user.role) < 0 && this.editUserProfileMode) {
       browserHistory.push('/')
     }
     const userId = this.editUserProfileMode ? this.props.location.query.user_id : this.props.user.id
@@ -42,7 +42,7 @@ class Profile extends React.Component {
 
   handleProfileUpdate(event) {
     event.preventDefault();
-    this.props.dispatch(updateProfile(this.props.userForm, this.props.token, this.addUserProfileMode));
+    this.props.dispatch(updateProfile(this.props.userForm, this.props.token, this.addUserProfileMode, this.editUserProfileMode));
   }
 
   handleChangePassword(event) {
@@ -92,12 +92,14 @@ class Profile extends React.Component {
           <label htmlFor="female">Female</label>
           <label htmlFor="preferred_working_hour">Preferred Working Hour</label>
           <input type="text" name="preferred_working_hour" id="preferred_working_hour" value={this.props.userForm.preferred_working_hour} onChange={this.handleChange.bind(this)}/>
-          <label htmlFor="role">Role</label>
-          <select name="role" value={this.props.userForm.role} onChange={this.handleChange.bind(this)}>
+
+          {this.addUserProfileMode || this.editUserProfileMode ? <div>
+            <label htmlFor="role">Role</label>
+            <select name="role" value={this.props.userForm.role} onChange={this.handleChange.bind(this)}>
             {Object.values(USER_ROLES).map((item, index) => {
               return (<option key={item} value={item}>{item}</option>)
             })}
-          </select>
+            </select></div> : ''}
 
           {this.addUserProfileMode ? <div>
             <label htmlFor="password">New Password</label>

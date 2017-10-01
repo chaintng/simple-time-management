@@ -105,7 +105,7 @@ function _validateInput(req) {
     return 'Input hour should be integer number that more than 0.'
   }
   if (!ACCESS_ROLES.CAN_CRUD_USER_JOBS.indexOf(req.user.get('role'))
-    && req.body.user_id && req.body.user_id !== req.body.user_id) {
+    && req.body.user_id && req.body.user_id.toString() !== req.user.get('id').toString()) {
     return `Only ${ACCESS_ROLES.CAN_CRUD_USER_JOBS.join(', ')} who can CRUD other user task`;
   }
 }

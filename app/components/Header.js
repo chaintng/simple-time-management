@@ -2,6 +2,7 @@ import React from 'react';
 import { IndexLink, Link } from 'react-router';
 import { connect } from 'react-redux'
 import { logout } from '../actions/auth';
+import { ACCESS_ROLES } from '../../config/constants';
 
 class Header extends React.Component {
   handleLogout(event) {
@@ -29,8 +30,8 @@ class Header extends React.Component {
       <section className="hero is-info">
         <div className="container columns">
           <ul className="column list-inline is-one-third">
-            <li><IndexLink to="/">Jobs</IndexLink></li>
-            <li><Link to="/users">Users</Link></li>
+            <li style={this.props.user ? {} : {display: 'none'}}><IndexLink to="/">Jobs</IndexLink></li>
+            <li style={this.props.user && ACCESS_ROLES.CAN_MANAGE_USER.indexOf(this.props.user.role) >= 0 ? {} : {display: 'none'}}><Link to="/users">Users</Link></li>
           </ul>
           {rightNav}
         </div>

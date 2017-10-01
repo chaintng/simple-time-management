@@ -1,6 +1,7 @@
 import moment from 'moment';
 import cookie from 'react-cookie';
 import { browserHistory } from 'react-router';
+import { ACCESS_ROLES } from '../../config/constants'
 
 export function login(email, password) {
   return (dispatch) => {
@@ -137,7 +138,7 @@ export function resetPassword(password, confirm, pathToken) {
   };
 }
 
-export function updateProfile(userForm, token, isAddUserProfile) {
+export function updateProfile(userForm, token, isAddUserProfile, isEditUserProfile) {
   return (dispatch) => {
     dispatch({
       type: 'CLEAR_MESSAGES'
@@ -152,9 +153,13 @@ export function updateProfile(userForm, token, isAddUserProfile) {
     }).then((response) => {
       if (response.ok) {
         return response.json().then((json) => {
+          if (isEditUserProfile && ACCESS_ROLES.CAN_MANAGE_USER.indexOf(userForm.role) < 0) {
+            browserHistory.push('/')
+          }
           dispatch({
             type: 'UPDATE_PROFILE_SUCCESS',
-            messages: [json]
+            messages: [json],
+            user: userForm
           });
         });
       } else {

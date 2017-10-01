@@ -396,11 +396,14 @@ exports.authGoogleCallback = function(req, res) {
 
 
 exports.userListGet = function(req, res) {
+  const filter = {}
   if (ACCESS_ROLES.CAN_MANAGE_USER.indexOf(req.user.get('role')) < 0) {
-    return res.status(400).send({msg: 'Only ADMIN_USER and USER_MANAGER are allowed.'})
+    filter.id = req.user.id
   }
 
-  return new User().fetchAll()
+  return new User()
+    .where(filter)
+    .fetchAll()
     .then((items) => {
       const returnObj = items.models.map((item) => ({
         id: item.get('id'),
@@ -431,9 +434,10 @@ exports.userGet = function(req, res, next) {
 function _checkPermission(req, res) {
   if (ACCESS_ROLES.CAN_MANAGE_USER.indexOf(req.user.get('role')) < 0
     && (
-      (!!req.query.user_id && req.user.get('id') !== req.query.user_id)
-      || (!!req.body.id && req.user.get('id') !== req.body.id)
+      (!!req.body.role &&  req.body.role !== req.user.get('role')) // cannot change role
+      || (!!req.query.user_id && req.user.get('id').toString() !== req.query.user_id.toString())
+      || (!!req.body.id && req.user.get('id').toString() !== req.body.id.toString())
     )) {
-    return res.status(400).send({msg: 'Only ADMIN_USER are allowed.'})
+    return res.status(400).send({msg: `Only ${ACCESS_ROLES.CAN_MANAGE_USER.join(', ')} are allowed.`})
   }
 }
