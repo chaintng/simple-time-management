@@ -1,5 +1,5 @@
 const initialState = {
-  token: null,
+  token: undefined,
   user: {}
 };
 

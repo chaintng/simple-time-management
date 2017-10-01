@@ -1,8 +1,8 @@
 import React from 'react';
 import { IndexRoute, Route } from 'react-router';
 import App from './components/App';
-import Home from './components/Home';
 import Job from './components/Job';
+import User from './components/User';
 import NotFound from './components/NotFound';
 import Login from './components/Account/Login';
 import Signup from './components/Account/Signup';
@@ -29,6 +29,7 @@ export default function getRoutes(store) {
   return (
     <Route path="/" component={App}>
       <IndexRoute component={Job} onEnter={ensureAuthenticated} onLeave={clearMessages}/>
+      <Route path="/users" component={User} onEnter={ensureAuthenticated} onLeave={clearMessages}/>
       <Route path="/login" component={Login} onLeave={clearMessages}/>
       <Route path="/signup" component={Signup} onEnter={skipIfAuthenticated} onLeave={clearMessages}/>
       <Route path="/account" component={Profile} onEnter={ensureAuthenticated} onLeave={clearMessages}/>

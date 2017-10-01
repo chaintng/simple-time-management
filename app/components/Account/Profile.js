@@ -1,36 +1,43 @@
 import React from 'react';
 import { connect } from 'react-redux'
+import { Link } from 'react-router'
 import { updateProfile, changePassword, deleteAccount } from '../../actions/auth';
+import { fetchProfile } from '../../actions/account'
 import { link, unlink } from '../../actions/oauth';
 import Messages from '../Messages';
+import { browserHistory } from 'react-router'
+import { ACCESS_ROLES, USER_ROLES } from '../../../config/constants'
 
 class Profile extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      email: props.user.email,
-      name: props.user.name,
-      gender: props.user.gender,
-      location: props.user.location,
-      website: props.user.website,
-      gravatar: props.user.gravatar,
-      password: '',
-      confirm: ''
-    };
+  }
+
+  componentDidMount() {
+    this.editUserProfileMode = !!this.props.location.query.user_id
+
+    if (ACCESS_ROLES.CAN_CRUD_USER_JOBS.indexOf(this.props.user.role) < 0 && this.editUserProfileMode) {
+      browserHistory.push('/')
+    }
+    const userId = this.editUserProfileMode ? this.props.location.query.user_id : this.props.user.id
+    this.props.dispatch(fetchProfile(userId, this.props.token))
   }
 
   handleChange(event) {
-    this.setState({ [event.target.name]: event.target.value });
+    this.props.dispatch({
+      type: 'CHANGE_USER_FORM',
+      user: Object.assign({}, this.props.userForm, { [event.target.name]: event.target.value }),
+    });
   }
 
   handleProfileUpdate(event) {
     event.preventDefault();
-    this.props.dispatch(updateProfile(this.state, this.props.token));
+    this.props.dispatch(updateProfile(this.props.userForm, this.props.token));
   }
 
   handleChangePassword(event) {
     event.preventDefault();
-    this.props.dispatch(changePassword(this.state.password, this.state.confirm, this.props.token));
+    this.props.dispatch(changePassword(this.props.userForm.password, this.props.userForm.confirm, this.props.token));
   }
 
   handleDeleteAccount(event) {
@@ -54,42 +61,54 @@ class Profile extends React.Component {
     );
     return (
       <div className="container">
+        {this.editUserProfileMode ?
+          <div>
+            <h3>Edit User Profile (User ID: {this.props.userForm.id})</h3>
+            <Link to="/users">&lt;-- Back to User page</Link>
+          </div>
+          : ''}
         <Messages messages={this.props.messages}/>
-        <h4>Profile Information</h4>
-        <form onSubmit={this.handleProfileUpdate.bind(this)}>
+        <div className="columns">
+        <form onSubmit={this.handleProfileUpdate.bind(this)} className="column">
+          <h4>Profile Information</h4>
+          <input type="hidden" name="id" value={this.props.userForm.id} />
           <label htmlFor="email">Email</label>
-          <input type="email" name="email" id="email" value={this.state.email} onChange={this.handleChange.bind(this)}/>
+          <input type="email" name="email" id="email" value={this.props.userForm.email} onChange={this.handleChange.bind(this)}/>
           <label htmlFor="name">Name</label>
-          <input type="text" name="name" id="name" value={this.state.name} onChange={this.handleChange.bind(this)}/>
+          <input type="text" name="name" id="name" value={this.props.userForm.name} onChange={this.handleChange.bind(this)}/>
           <label>Gender</label>
-          <input type="radio" name="gender" id="male" value="male" checked={this.state.gender === 'male'} onChange={this.handleChange.bind(this)}/>
+          <input type="radio" name="gender" id="male" value="male" checked={this.props.userForm.gender === 'male'} onChange={this.handleChange.bind(this)}/>
           <label htmlFor="male">Male</label>
-          <input type="radio" name="gender" id="female" value="female" checked={this.state.gender === 'female'} onChange={this.handleChange.bind(this)}/>
+          <input type="radio" name="gender" id="female" value="female" checked={this.props.userForm.gender === 'female'} onChange={this.handleChange.bind(this)}/>
           <label htmlFor="female">Female</label>
-          <label htmlFor="location">Location</label>
-          <input type="text" name="location" id="location" value={this.state.location} onChange={this.handleChange.bind(this)}/>
-          <label htmlFor="website">Website</label>
-          <input type="text" name="website" id="website" value={this.state.website} onChange={this.handleChange.bind(this)}/>
-          <label>Gravatar</label>
-          <img src={this.state.gravatar} className="gravatar" width="100" height="100"/>
+          <label htmlFor="preferred_working_hour">Preferred Working Hour</label>
+          <input type="text" name="preferred_working_hour" id="preferred_working_hour" value={this.props.userForm.preferred_working_hour} onChange={this.handleChange.bind(this)}/>
+          <label htmlFor="role">Role</label>
+          <select name="role" value={this.props.userForm.role} onChange={this.handleChange.bind(this)}>
+            {Object.values(USER_ROLES).map((item, index) => {
+              return (<option key={item} value={item}>{item}</option>)
+            })}
+          </select>
+          <br/>
           <button type="submit">Update Profile</button>
         </form>
-        <h4>Change Password</h4>
-        <form onSubmit={this.handleChangePassword.bind(this)}>
+        <form onSubmit={this.handleChangePassword.bind(this)} className="column">
+          <h4>Change Password</h4>
           <label htmlFor="password">New Password</label>
-          <input type="password" name="password" id="password" value={this.state.password} onChange={this.handleChange.bind(this)}/>
+          <input type="password" name="password" id="password" value={this.props.userForm.password} onChange={this.handleChange.bind(this)}/>
           <label htmlFor="confirm">Confirm Password</label>
-          <input type="password" name="confirm" id="confirm" value={this.state.confirm} onChange={this.handleChange.bind(this)}/>
+          <input type="password" name="confirm" id="confirm" value={this.props.userForm.confirm} onChange={this.handleChange.bind(this)}/>
           <br/>
           <button type="submit">Change Password</button>
         </form>
-        <h4>Linked Accounts</h4>
-        <p>{googleLinkedAccount}</p>
-        <h4>Delete Account</h4>
-        <form onSubmit={this.handleDeleteAccount.bind(this)}>
+        <form onSubmit={this.handleDeleteAccount.bind(this)} className="column">
+          <h4>Linked Accounts</h4>
+          <p>{googleLinkedAccount}</p>
+          <h4>Delete Account</h4>
           <p>You can delete your account, but keep in mind this action is irreversible.</p>
           <button type="submit">Delete my account</button>
         </form>
+        </div>
       </div>
     );
   }
@@ -99,7 +118,8 @@ const mapStateToProps = (state) => {
   return {
     token: state.auth.token,
     user: state.auth.user,
-    messages: state.messages
+    messages: state.messages,
+    userForm: state.account.userForm
   };
 };
 

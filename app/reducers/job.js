@@ -7,8 +7,8 @@ export const initialState = {
   jobFormValue: {
     title: '',
     note: '',
-    hour: '',
     date: '',
+    hour: '',
     user_id: '',
   }
 };

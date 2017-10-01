@@ -2,19 +2,25 @@ import React from 'react';
 
 class Messages extends React.Component {
   render() {
-    return this.props.messages.success ? (
-      <div role="alert" className="text-success">
-        {this.props.messages.success.map((message, index) => <div key={index}>{message.msg}</div>)}
-      </div>
-    ) : this.props.messages.error ? (
-      <div role="alert" className="text-danger">
-        {this.props.messages.error.map((message, index) => <div key={index}>{message.msg}</div>)}
-      </div>
-    ) : this.props.messages.info ? (
-      <div role="alert" className="text-info">
-        {this.props.messages.info.map((message, index) => <div key={index}>{message.msg}</div>)}
-      </div>
-    ) : null;
+    let messageClass = '';
+    let messages = []
+
+    if (this.props.messages.success) {
+      messageClass = 'is-primary'
+      messages = this.props.messages.success
+    } else if (this.props.messages.error) {
+      messageClass = 'is-danger'
+      messages = this.props.messages.error
+    } else if (this.props.messages.info) {
+      messageClass = 'is-info'
+      messages = this.props.messages.info
+    }
+
+    return (messages.length > 0 ? <article className={`message ${messageClass}`}>
+        <div role="alert" className="message-body">
+          {messages.map((message, index) => <div key={index}>{message.msg}</div>)}
+        </div>
+    </article> : <article></article>)
   }
 }
 

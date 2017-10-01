@@ -137,7 +137,7 @@ export function resetPassword(password, confirm, pathToken) {
   };
 }
 
-export function updateProfile(state, token) {
+export function updateProfile(userForm, token) {
   return (dispatch) => {
     dispatch({
       type: 'CLEAR_MESSAGES'
@@ -148,13 +148,7 @@ export function updateProfile(state, token) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        email: state.email,
-        name: state.name,
-        gender: state.gender,
-        location: state.location,
-        website: state.website
-      })
+      body: JSON.stringify(userForm)
     }).then((response) => {
       if (response.ok) {
         return response.json().then((json) => {

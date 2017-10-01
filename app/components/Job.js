@@ -1,7 +1,8 @@
 import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux'
-import { submitJobForm, loadAllJob, deleteJob, changeMode, loadAllUsers } from '../actions/job';
+import { submitJobForm, loadAllJob, deleteJob, changeMode } from '../actions/job';
+import { loadAllUsers } from '../actions/account'
 import Messages from './Messages';
 import JobTable from './JobsTable';
 import JobExport from './JobsExport';
@@ -97,7 +98,7 @@ class Job extends React.Component {
                 <label htmlFor="user_id">User:</label>
                 <select name="user_id" value={this.props.jobFormValue.user_id} onChange={this.handleChange.bind(this)}>
                   {this.props.allUsers.map((item) => {
-                    return (<option value={item.id}>{`${item.id}: ${item.user_name}`}</option>)
+                    return (<option value={item.id}>{`${item.id}: ${item.name}`}</option>)
                   })}
                 </select>
               </div> : ''}

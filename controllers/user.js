@@ -27,38 +27,39 @@ exports.ensureAuthenticated = function(req, res, next) {
     res.status(401).send({ msg: 'Unauthorized' });
   }
 };
-  /**
-   * POST /login
-   * Sign in with email and password
-   */
-  exports.loginPost = function(req, res, next) {
-    req.assert('email', 'Email is not valid').isEmail();
-    req.assert('email', 'Email cannot be blank').notEmpty();
-    req.assert('password', 'Password cannot be blank').notEmpty();
-    req.sanitize('email').normalizeEmail({ remove_dots: false });
 
-    var errors = req.validationErrors();
+/**
+ * POST /login
+ * Sign in with email and password
+ */
+exports.loginPost = function(req, res, next) {
+  req.assert('email', 'Email is not valid').isEmail();
+  req.assert('email', 'Email cannot be blank').notEmpty();
+  req.assert('password', 'Password cannot be blank').notEmpty();
+  req.sanitize('email').normalizeEmail({ remove_dots: false });
 
-    if (errors) {
-      return res.status(400).send(errors);
-    }
+  var errors = req.validationErrors();
 
-    new User({ email: req.body.email })
-      .fetch()
-      .then(function(user) {
-        if (!user) {
-          return res.status(401).send({ msg: 'The email address ' + req.body.email + ' is not associated with any account. ' +
-          'Double-check your email address and try again.'
-          });
-        }
-        user.comparePassword(req.body.password, function(err, isMatch) {
-          if (!isMatch) {
-            return res.status(401).send({ msg: 'Invalid email or password' });
-          }
-          res.send({ token: generateToken(user), user: user.toJSON() });
+  if (errors) {
+    return res.status(400).send(errors);
+  }
+
+  new User({ email: req.body.email })
+    .fetch()
+    .then(function(user) {
+      if (!user) {
+        return res.status(401).send({ msg: 'The email address ' + req.body.email + ' is not associated with any account. ' +
+        'Double-check your email address and try again.'
         });
+      }
+      user.comparePassword(req.body.password, function(err, isMatch) {
+        if (!isMatch) {
+          return res.status(401).send({ msg: 'Invalid email or password' });
+        }
+        res.send({ token: generateToken(user), user: user.toJSON() });
       });
-  };
+    });
+};
 
 /**
  * POST /signup
@@ -98,6 +99,8 @@ exports.signupPost = function(req, res, next) {
  * Update profile information OR change password.
  */
 exports.accountPut = function(req, res, next) {
+  _validateInput(req, res)
+
   if ('password' in req.body) {
     req.assert('password', 'Password must be at least 4 characters long').len(4);
     req.assert('confirm', 'Passwords must match').equals(req.body.password);
@@ -113,7 +116,7 @@ exports.accountPut = function(req, res, next) {
     return res.status(400).send(errors);
   }
 
-  var user = new User({ id: req.user.id });
+  var user = new User({ id: req.body.id });
   if ('password' in req.body) {
     user.save({ password: req.body.password }, { patch: true });
   } else {
@@ -121,8 +124,8 @@ exports.accountPut = function(req, res, next) {
       email: req.body.email,
       name: req.body.name,
       gender: req.body.gender,
-      location: req.body.location,
-      website: req.body.website
+      preferred_working_hour: req.body.preferred_working_hour,
+      role: req.body.role
     }, { patch: true });
   }
   user.fetch().then(function(user) {
@@ -378,10 +381,36 @@ exports.userListGet = function(req, res) {
     .then((items) => {
       const returnObj = items.models.map((item) => ({
         id: item.get('id'),
-        user_name: item.get('name'),
+        name: item.get('name'),
+        email: item.get('email'),
+        preferred_working_hour: item.get('preferred_working_hour'),
         role: item.get('role')
       }))
       return res.json(returnObj)
     })
 }
 
+
+/**
+ * POST /login
+ * Sign in with email and password
+ */
+exports.userGet = function(req, res, next) {
+  _validateInput(req, res)
+
+  return new User({ id: req.query.user_id || req.user.get('id') })
+    .fetch()
+    .then((item) => {
+      return res.json(item.toJSON())
+    })
+};
+
+function _validateInput(req, res) {
+  if (ACCESS_ROLES.CAN_MANAGE_USER.indexOf(req.user.get('role')) < 0
+    && (
+      (!!req.query.user_id && req.user.get('id') !== req.query.user_id)
+      || (!!req.body.id && req.user.get('id') !== req.body.id)
+    )) {
+    return res.status(400).send({msg: 'Only ADMIN_USER are allowed.'})
+  }
+}

@@ -89,7 +89,7 @@ exports.jobListGet = function(req, res) {
         preferred_working_hour: item.get('preferred_working_hour'),
         title: item.get('title'),
         note: item.get('note'),
-        date: item.get('date') ? moment(item.get('date')).format('YYYY-MM-DD') : null,
+        date: item.get('date') ? moment(item.get('date')).format('YYYY-MM-DD') : undefined,
         hour: item.get('hour')
       }))
       return res.json(returnObj)

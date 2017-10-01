@@ -1,5 +1,4 @@
 const initialState = {
-  preferredWorkingHour: null,
 };
 
 export default function global(state = initialState, action) {
