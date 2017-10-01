@@ -1,5 +1,7 @@
 # Simple Time Management
 
+![Sample GIF](./sample.gif)
+
 ## How to run
 1. `git clone` project.
 2. `cp .env-example .env`
