@@ -19,8 +19,8 @@ class Job extends React.Component {
 
   componentDidMount() {
     this.props.dispatch(loadAllJob({
-      dateFrom: document.getElementById('filterDateFrom').value,
-      dateTo: document.getElementById('filterDateTo').value
+      dateFrom: this.firstDay.format('YYYY-MM-DD'),
+      dateTo: this.lastDay.format('YYYY-MM-DD')
     }, this.props.token))
 
     this.props.dispatch(loadAllUsers(this.props.token))

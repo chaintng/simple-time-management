@@ -1,13 +1,17 @@
 const moment = require('moment')
 
 const Job = require('../models/Job')
-const ACCESS_ROLES = require('../config/constants').ACCESS_ROLES
+const { ACCESS_ROLES } = require('../config/constants')
 
 /**
  * POST /job
  */
 exports.jobPost = function(req, res) {
-  _validateInput(req, res)
+  const validateError = _validateInput(req)
+
+  if (validateError) {
+    return res.send(400).send({msg: validateError})
+  }
 
   new Job({
     user_id: req.user.id,
@@ -35,7 +39,11 @@ exports.jobPost = function(req, res) {
 }
 
 exports.jobPut = function(req, res) {
-  _validateInput(req, res)
+  const validateError = _validateInput(req)
+
+  if (validateError) {
+    return res.send(400).send({msg: validateError})
+  }
 
   const jobModel = new Job({ id: req.body.id })
 
@@ -117,17 +125,12 @@ exports.jobListGet = function(req, res) {
     })
 }
 
-function _validateInput(req, res) {
+function _validateInput(req) {
   const input = req.body
   if (input.hour && input.hour > 24) {
     return 'Input hour is more than 24 hours.'
   }
   if (input.hour && input.hour <= 0) {
     return 'Input hour should be integer number that more than 0.'
-  }
-  if (!ACCESS_ROLES.CAN_CRUD_USER_JOBS.indexOf(req.user.get('role'))
-    && req.body.user_id && req.body.user_id.toString() !== req.user.get('id').toString()) {
-    const errorMsg = `Only ${ACCESS_ROLES.CAN_CRUD_USER_JOBS.join(', ')} who can CRUD other user task`;
-    res.status(400).send({ msg: errorMsg })
   }
 }
