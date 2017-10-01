@@ -13,3 +13,8 @@
 ## How to run with Docker
 1. `docker-compose up --build`
 2. When finish, run `docker-compose down --rmi local`
+
+## How to run test
+1. `cp .env-example .testenv`
+2. Correct `.testenv` file for test database configuration
+3. `$ npm test`
