@@ -7,9 +7,7 @@
     "deploy": "npm test && git push heroku master",
     "postinstall": "npm run build",
     "start": "node server.js",
-    "test": "npm run test:client && npm run test:server",
-    "test:client": "mocha test/client --recursive --compilers js:babel-register",
-    "test:server": "mocha test/server --recursive --compilers js:babel-register"
+    "test": "mocha test/server --recursive --compilers js:babel-register -r ./test/env.js"
   },
   "dependencies": {
     "async": "^1.5.2",
@@ -50,6 +48,9 @@
     "redux-promise": "^0.5.3",
     "redux-thunk": "^2.0.1",
     "request": "^2.69.0",
+    "should": "^13.1.0",
+    "sql-fixtures": "^1.0.0",
+    "timekeeper": "^2.0.0",
     "webpack": "^1.12.14",
     "webpack-dev-middleware": "^1.6.1",
     "webpack-hot-middleware": "^2.10.0",
@@ -64,9 +65,9 @@
     "mocha": "^2.4.5",
     "react-addons-test-utils": "^15.0.2",
     "redux-mock-store": "^1.0.2",
+    "supertest": "^3.0.0",
     "sinon": "^1.17.3",
-    "sinon-chai": "^2.8.0",
-    "supertest": "^1.2.0"
+    "sinon-chai": "^2.8.0"
   },
   "engines": {
     "node": "6.1.0"

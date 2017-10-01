@@ -7,10 +7,7 @@ const ACCESS_ROLES = require('../config/constants').ACCESS_ROLES
  * POST /job
  */
 exports.jobPost = function(req, res) {
-  const errorMsg = _validateInput(req)
-  if (errorMsg) {
-    return res.status(400).send({ msg: errorMsg })
-  }
+  _validateInput(req, res)
 
   new Job({
     user_id: req.user.id,
@@ -38,28 +35,52 @@ exports.jobPost = function(req, res) {
 }
 
 exports.jobPut = function(req, res) {
-  const errorMsg = _validateInput(req)
-  if (errorMsg) {
-    return res.status(400).send({ msg: errorMsg })
+  _validateInput(req, res)
+
+  const jobModel = new Job({ id: req.body.id })
+
+  if (ACCESS_ROLES.CAN_CRUD_USER_JOBS.indexOf(req.user.get('role')) < 0) {
+    jobModel.where('user_id', req.user.get('id'))
   }
 
-  new Job({ id: req.body.id })
-    .save({
-      title: req.body.title,
-      date: req.body.date,
-      hour: req.body.hour,
-      note: req.body.note,
-      user_id: !!req.body.user_id ? req.body.user_id : req.user.id
-    })
-    .then(function(job) {
-    res.send({ msg: 'Job has been updated.' });
-  });
+  return jobModel.fetch()
+    .then((item) => {
+      if (!item) {
+        return res.status(400).send({ msg: `Only ${ACCESS_ROLES.CAN_CRUD_USER_JOBS.join(', ')} can CRUD user's tasks.`})
+      }
+
+      return item
+        .save({
+          title: req.body.title,
+          date: req.body.date,
+          hour: req.body.hour,
+          note: req.body.note,
+          user_id: !!req.body.user_id ? req.body.user_id : req.user.id
+        })
+        .then(function(job) {
+          res.send({msg: 'Job has been updated.'});
+        })
+  } );
 }
 
 exports.jobDel = function(req, res) {
-  new Job({ id: req.body.jobId }).destroy().then(function() {
-    res.send({ msg: 'Job has been permanently deleted.' });
-  });
+  const  jobModel = new Job({ id: req.body.jobId })
+  if (ACCESS_ROLES.CAN_CRUD_USER_JOBS.indexOf(req.user.get('role')) < 0) {
+    jobModel.where('user_id', req.user.get('id'))
+  }
+
+  jobModel
+    .fetch()
+    .then((item) => {
+      if (!item) {
+        return res.status(400).send({msg: `Only ${ACCESS_ROLES.CAN_CRUD_USER_JOBS.join(', ')} can CRUD user's tasks.`})
+      }
+
+      return item.destroy()
+        .then(function () {
+          res.send({msg: 'Job has been permanently deleted.'});
+        })
+    })
 }
 
 exports.jobListGet = function(req, res) {
@@ -96,16 +117,17 @@ exports.jobListGet = function(req, res) {
     })
 }
 
-function _validateInput(req) {
-  const input = req
-  if (input.hour > 24) {
+function _validateInput(req, res) {
+  const input = req.body
+  if (input.hour && input.hour > 24) {
     return 'Input hour is more than 24 hours.'
   }
-  if (input.hour <= 0) {
+  if (input.hour && input.hour <= 0) {
     return 'Input hour should be integer number that more than 0.'
   }
   if (!ACCESS_ROLES.CAN_CRUD_USER_JOBS.indexOf(req.user.get('role'))
     && req.body.user_id && req.body.user_id.toString() !== req.user.get('id').toString()) {
-    return `Only ${ACCESS_ROLES.CAN_CRUD_USER_JOBS.join(', ')} who can CRUD other user task`;
+    const errorMsg = `Only ${ACCESS_ROLES.CAN_CRUD_USER_JOBS.join(', ')} who can CRUD other user task`;
+    res.status(400).send({ msg: errorMsg })
   }
 }
