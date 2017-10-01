@@ -7,6 +7,7 @@ export default function messages(state = {}, action) {
     case 'FORGOT_PASSWORD_FAILURE':
     case 'RESET_PASSWORD_FAILURE':
     case 'JOB_SUBMIT_FAILURE':
+    case 'DELETE_ACCOUNT_FAILURE':
     case 'OAUTH_FAILURE':
     case 'UNLINK_FAILURE':
     case 'LINK_FAILURE':

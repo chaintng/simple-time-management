@@ -1,3 +1,5 @@
+import Job from "../models/Job";
+
 var async = require('async');
 var crypto = require('crypto');
 var nodemailer = require('nodemailer');
@@ -5,6 +7,7 @@ var jwt = require('jsonwebtoken');
 var moment = require('moment');
 var request = require('request');
 var User = require('../models/User');
+var USER_ROLES = require('../config/constants').USER_ROLES
 var ACCESS_ROLES = require('../config/constants').ACCESS_ROLES
 
 function generateToken(user) {
@@ -81,7 +84,7 @@ exports.signupPost = function(req, res, next) {
     name: req.body.name,
     email: req.body.email,
     password: req.body.password,
-    role: DEFAULT_USER_ROLE
+    role: USER_ROLES.REGULAR_USER
   }).save()
     .then(function(user) {
         res.send({ token: generateToken(user), user: user });
@@ -123,15 +126,16 @@ exports.accountSave = function(req, res, next) {
     name: req.body.name,
     gender: req.body.gender,
     preferred_working_hour: req.body.preferred_working_hour,
-    role: req.body.role
+    role: req.body.role || USER_ROLES.REGULAR_USER
   }
+
+  user = new User({ id: req.body.id });
 
   if (isCreateUser) {
     saveData.password = req.body.password
     user = new User();
   } else if ('password' in req.body) {
     saveData = {password: req.body.password}
-    user = new User({ id: req.body.id });
   }
 
   user.save(saveData, { patch: !isCreateUser });
@@ -154,9 +158,20 @@ exports.accountSave = function(req, res, next) {
  * DELETE /account
  */
 exports.accountDelete = function(req, res, next) {
-  new User({ id: req.user.id }).destroy().then(function(user) {
-    res.send({ msg: 'Your account has been permanently deleted.' });
-  });
+  _checkPermission(req, res)
+  new Job()
+    .where({user_id: req.body.id})
+    .destroy()
+    .then(() => {
+      return new User({ id: req.body.id })
+        .destroy()
+        .then(function(user) {
+          res.send({ msg: 'User has been permanently deleted.' });
+        })
+    })
+    .catch(function(err) {
+      res.status(500).send({ msg: `Server Error: ${err.toString()}` });
+    });
 };
 
 /**
@@ -360,7 +375,7 @@ exports.authGoogle = function(req, res) {
                 user = new User();
                 user.set('name', profile.name);
                 user.set('email', profile.email);
-                user.set('role', DEFAULT_USER_ROLE)
+                user.set('role', USER_ROLES.REGULAR_USER)
                 user.set('gender', profile.gender);
                 user.set('location', profile.location);
                 user.set('picture', profile.picture.replace('sz=50', 'sz=200'));

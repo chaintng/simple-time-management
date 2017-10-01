@@ -52,7 +52,7 @@ class Profile extends React.Component {
 
   handleDeleteAccount(event) {
     event.preventDefault();
-    this.props.dispatch(deleteAccount(this.props.token));
+    this.props.dispatch(deleteAccount(this.props.userForm.id, this.props.userForm.id === this.props.user.id, this.props.token));
   }
 
   handleLink(provider) {

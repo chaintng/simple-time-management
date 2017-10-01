@@ -205,7 +205,7 @@ export function changePassword(userId, password, confirm, token) {
   };
 }
 
-export function deleteAccount(token) {
+export function deleteAccount(userId, isOwnAccount, token) {
   return (dispatch) => {
     dispatch({
       type: 'CLEAR_MESSAGES'
@@ -215,14 +215,28 @@ export function deleteAccount(token) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      }
+      },
+      body: JSON.stringify({
+        id: userId
+      })
     }).then((response) => {
       if (response.ok) {
         return response.json().then((json) => {
-          dispatch(logout());
+          if (isOwnAccount) {
+            dispatch(logout());
+          } else {
+            browserHistory.push('/users')
+          }
           dispatch({
             type: 'DELETE_ACCOUNT_SUCCESS',
             messages: [json]
+          });
+        });
+      } else {
+        return response.json().then((json) => {
+          dispatch({
+            type: 'DELETE_ACCOUNT_FAILURE',
+            messages: Array.isArray(json) ? json : [json]
           });
         });
       }

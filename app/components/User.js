@@ -43,8 +43,6 @@ class User extends React.Component {
                 <td>{user.role}</td>
                 <td>
                   <Link to={`/account?mode=EDIT&user_id=${user.id}`}>Edit</Link>
-                  |
-                  <a onClick={() => this.props.deleteAction(user.id)}>Del</a>
                 </td>
               </tr>)
             })}
