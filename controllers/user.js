@@ -98,9 +98,10 @@ exports.signupPost = function(req, res, next) {
  * PUT /account
  * Update profile information OR change password.
  */
-exports.accountPut = function(req, res, next) {
-  _validateInput(req, res)
+exports.accountSave = function(req, res, next) {
+  _checkPermission(req, res)
 
+  const isCreateUser = req.method === 'POST'
   if ('password' in req.body) {
     req.assert('password', 'Password must be at least 4 characters long').len(4);
     req.assert('confirm', 'Passwords must match').equals(req.body.password);
@@ -110,29 +111,36 @@ exports.accountPut = function(req, res, next) {
     req.sanitize('email').normalizeEmail({ remove_dots: false });
   }
 
-  var errors = req.validationErrors();
+  const errors = req.validationErrors();
 
   if (errors) {
     return res.status(400).send(errors);
   }
 
-  var user = new User({ id: req.body.id });
-  if ('password' in req.body) {
-    user.save({ password: req.body.password }, { patch: true });
-  } else {
-    user.save({
-      email: req.body.email,
-      name: req.body.name,
-      gender: req.body.gender,
-      preferred_working_hour: req.body.preferred_working_hour,
-      role: req.body.role
-    }, { patch: true });
+  let user
+  let saveData = {
+    email: req.body.email,
+    name: req.body.name,
+    gender: req.body.gender,
+    preferred_working_hour: req.body.preferred_working_hour,
+    role: req.body.role
   }
+
+  if (isCreateUser) {
+    saveData.password = req.body.password
+    user = new User();
+  } else if ('password' in req.body) {
+    saveData = {password: req.body.password}
+    user = new User({ id: req.body.id });
+  }
+
+  user.save(saveData, { patch: !isCreateUser });
+
   user.fetch().then(function(user) {
-    if ('password' in req.body) {
-      res.send({ msg: 'Your password has been changed.' });
+    if ('password' in req.body && !isCreateUser) {
+      res.send({ msg: 'Password has been changed.' });
     } else {
-      res.send({ user: user, msg: 'Your profile information has been updated.' });
+      res.send({ user: user, msg: 'Profile information has been saved.' });
     }
     res.redirect('/account');
   }).catch(function(err) {
@@ -396,7 +404,7 @@ exports.userListGet = function(req, res) {
  * Sign in with email and password
  */
 exports.userGet = function(req, res, next) {
-  _validateInput(req, res)
+  _checkPermission(req, res)
 
   return new User({ id: req.query.user_id || req.user.get('id') })
     .fetch()
@@ -405,7 +413,7 @@ exports.userGet = function(req, res, next) {
     })
 };
 
-function _validateInput(req, res) {
+function _checkPermission(req, res) {
   if (ACCESS_ROLES.CAN_MANAGE_USER.indexOf(req.user.get('role')) < 0
     && (
       (!!req.query.user_id && req.user.get('id') !== req.query.user_id)

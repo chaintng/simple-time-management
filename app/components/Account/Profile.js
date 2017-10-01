@@ -7,6 +7,7 @@ import { link, unlink } from '../../actions/oauth';
 import Messages from '../Messages';
 import { browserHistory } from 'react-router'
 import { ACCESS_ROLES, USER_ROLES } from '../../../config/constants'
+import { initialState } from '../../reducers/account'
 
 class Profile extends React.Component {
   constructor(props) {
@@ -14,13 +15,22 @@ class Profile extends React.Component {
   }
 
   componentDidMount() {
-    this.editUserProfileMode = !!this.props.location.query.user_id
+    this.editUserProfileMode = this.props.location.query.mode === 'EDIT'
+    this.addUserProfileMode = this.props.location.query.mode === 'ADD'
 
     if (ACCESS_ROLES.CAN_CRUD_USER_JOBS.indexOf(this.props.user.role) < 0 && this.editUserProfileMode) {
       browserHistory.push('/')
     }
     const userId = this.editUserProfileMode ? this.props.location.query.user_id : this.props.user.id
-    this.props.dispatch(fetchProfile(userId, this.props.token))
+
+    if (this.addUserProfileMode) {
+      this.props.dispatch({
+        type: 'CHANGE_USER_FORM',
+        user: initialState.userForm,
+      });
+    } else {
+      this.props.dispatch(fetchProfile(userId, this.props.token))
+    }
   }
 
   handleChange(event) {
@@ -32,12 +42,12 @@ class Profile extends React.Component {
 
   handleProfileUpdate(event) {
     event.preventDefault();
-    this.props.dispatch(updateProfile(this.props.userForm, this.props.token));
+    this.props.dispatch(updateProfile(this.props.userForm, this.props.token, this.addUserProfileMode));
   }
 
   handleChangePassword(event) {
     event.preventDefault();
-    this.props.dispatch(changePassword(this.props.userForm.password, this.props.userForm.confirm, this.props.token));
+    this.props.dispatch(changePassword(this.props.userForm.id, this.props.userForm.password, this.props.userForm.confirm, this.props.token));
   }
 
   handleDeleteAccount(event) {
@@ -61,9 +71,9 @@ class Profile extends React.Component {
     );
     return (
       <div className="container">
-        {this.editUserProfileMode ?
+        {this.editUserProfileMode || this.addUserProfileMode ?
           <div>
-            <h3>Edit User Profile (User ID: {this.props.userForm.id})</h3>
+            <h3>{this.props.location.query.mode} User Profile {this.props.editUserProfileMode ? `(User ID: ${this.props.userForm.id})` : ''}</h3>
             <Link to="/users">&lt;-- Back to User page</Link>
           </div>
           : ''}
@@ -71,7 +81,6 @@ class Profile extends React.Component {
         <div className="columns">
         <form onSubmit={this.handleProfileUpdate.bind(this)} className="column">
           <h4>Profile Information</h4>
-          <input type="hidden" name="id" value={this.props.userForm.id} />
           <label htmlFor="email">Email</label>
           <input type="email" name="email" id="email" value={this.props.userForm.email} onChange={this.handleChange.bind(this)}/>
           <label htmlFor="name">Name</label>
@@ -89,21 +98,31 @@ class Profile extends React.Component {
               return (<option key={item} value={item}>{item}</option>)
             })}
           </select>
+
+          {this.addUserProfileMode ? <div>
+            <label htmlFor="password">New Password</label>
+            <input type="password" name="password" id="password" onChange={this.handleChange.bind(this)}/>
+            <label htmlFor="confirm">Confirm Password</label>
+            <input type="password" name="confirm" id="confirm" onChange={this.handleChange.bind(this)}/>
+          </div> : ''}
+
           <br/>
-          <button type="submit">Update Profile</button>
+          <button type="submit">{this.addUserProfileMode ? 'Create User' : 'Update Profile'}</button>
         </form>
-        <form onSubmit={this.handleChangePassword.bind(this)} className="column">
+        <form onSubmit={this.handleChangePassword.bind(this)} className="column" style={this.addUserProfileMode ? {display: 'none'} : {}}>
           <h4>Change Password</h4>
           <label htmlFor="password">New Password</label>
-          <input type="password" name="password" id="password" value={this.props.userForm.password} onChange={this.handleChange.bind(this)}/>
+          <input type="password" name="password" id="password" onChange={this.handleChange.bind(this)}/>
           <label htmlFor="confirm">Confirm Password</label>
-          <input type="password" name="confirm" id="confirm" value={this.props.userForm.confirm} onChange={this.handleChange.bind(this)}/>
+          <input type="password" name="confirm" id="confirm" onChange={this.handleChange.bind(this)}/>
           <br/>
           <button type="submit">Change Password</button>
         </form>
-        <form onSubmit={this.handleDeleteAccount.bind(this)} className="column">
-          <h4>Linked Accounts</h4>
-          <p>{googleLinkedAccount}</p>
+        <form onSubmit={this.handleDeleteAccount.bind(this)} className="column" style={this.addUserProfileMode ? {display: 'none'} : {}}>
+          {!this.editUserProfileMode ? <div>
+            <h4>Linked Accounts</h4>
+            <p>{googleLinkedAccount}</p>
+          </div> : ''}
           <h4>Delete Account</h4>
           <p>You can delete your account, but keep in mind this action is irreversible.</p>
           <button type="submit">Delete my account</button>

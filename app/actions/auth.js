@@ -137,13 +137,13 @@ export function resetPassword(password, confirm, pathToken) {
   };
 }
 
-export function updateProfile(userForm, token) {
+export function updateProfile(userForm, token, isAddUserProfile) {
   return (dispatch) => {
     dispatch({
       type: 'CLEAR_MESSAGES'
     });
     return fetch('/account', {
-      method: 'put',
+      method: isAddUserProfile ? 'post' : 'put',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
@@ -169,7 +169,7 @@ export function updateProfile(userForm, token) {
   };
 }
 
-export function changePassword(password, confirm, token) {
+export function changePassword(userId, password, confirm, token) {
   return (dispatch) => {
     dispatch({
       type: 'CLEAR_MESSAGES'
@@ -181,6 +181,7 @@ export function changePassword(password, confirm, token) {
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
+        id: userId,
         password: password,
         confirm: confirm
       })

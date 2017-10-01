@@ -1,10 +1,7 @@
 import React from 'react';
-import moment from 'moment';
 import { Link } from 'react-router'
 import { connect } from 'react-redux'
-import Messages from './Messages';
 import { loadAllUsers } from '../actions/account'
-import { ACCESS_ROLES } from "../../config/constants";
 
 class User extends React.Component {
   constructor(props) {
@@ -18,7 +15,12 @@ class User extends React.Component {
 
   render() {
     return (<div className="container">
-        <h3>Users</h3>
+        <div className="columns">
+          <h3 className="column">Users</h3>
+          <div className="column is-one-third" style={{textAlign: 'right', paddingTop: '20px'}}>
+            <Link className="button is-light" to="/account?mode=ADD">Create new user</Link>
+          </div>
+        </div>
         <div>
           <table className="table" style={{width: '100%'}}>
             <thead>
@@ -40,7 +42,7 @@ class User extends React.Component {
                 <td>{user.preferred_working_hour}</td>
                 <td>{user.role}</td>
                 <td>
-                  <Link to={`/account?user_id=${user.id}`}>Edit</Link>
+                  <Link to={`/account?mode=EDIT&user_id=${user.id}`}>Edit</Link>
                   |
                   <a onClick={() => this.props.deleteAction(user.id)}>Del</a>
                 </td>

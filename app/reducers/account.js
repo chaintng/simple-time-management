@@ -1,11 +1,11 @@
-const initialState = {
+export const initialState = {
   userForm: {
     id: '',
     email: '',
     name: '',
     gender: '',
-    location: '',
-    website: '',
+    preferred_working_hour: '',
+    role: '',
     password: '',
     confirm: '',
   },
